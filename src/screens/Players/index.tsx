@@ -6,6 +6,8 @@ import { Container, Form, HeaderList, NumberOfPlayers } from "./styles";
 import { AppError } from "@utils/AppError";
 import { playerAddByGroup } from "@storage/player/playerAddByGroup";
 import { playersGetByGroup } from "@storage/player/playersGetByGroup";
+import { playersGetByGroupAndTeam } from '@storage/player/playersGetByGroupAndTeam';
+import { PlayerStorageDTO } from "@storage/player/PlayerStorageDTO";
 
 import { Header } from "@components/Header";
 import { Highlight } from "@components/Highlight";
@@ -14,6 +16,7 @@ import { Filter } from "@components/Filter";
 import { Input } from "@components/Input";
 import { PlayerCard } from "@components/PlayerCard";
 
+
 type RouteParams = {
   group: string;
 };
@@ -21,7 +24,7 @@ type RouteParams = {
 export function Players() {
   const [newPlayerName, setNewPlayerName] = useState("");
   const [team, setTeam] = useState("Time A");
-  const [players, setPlayers] = useState([]);
+  const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
 
   const route = useRoute();
 
@@ -52,6 +55,16 @@ export function Players() {
         console.log(error);
         Alert.alert("Nova pessoa", "Não foi possível adicionar.");
       }
+    }
+  }
+
+  async function fetchPlayersByTeam() {
+    try {
+      const playersByTeam = await playersGetByGroupAndTeam(group, team);
+      setPlayers(playersByTeam)
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Pessoas', 'Não foi possível carregar as pessoas do time selecionado.');
     }
   }
 
@@ -90,9 +103,9 @@ export function Players() {
 
       <FlatList
         data={players}
-        keyExtractor={(item) => item}
+        keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
-          <PlayerCard name={item} onRemove={() => {}} />
+          <PlayerCard name={item.name} onRemove={() => {}} />
         )}
       />
     </Container>
